@@ -9,6 +9,7 @@ import Contact from '../pages/Contact';
 import NotFound from '../pages/NotFound';
 import Landing from '../pages/Landing';
 import AdminLogin from '../AdminLogin';
+import Profile from "../pages/Profile";
 
 const RouteHandler = () => {
   return (
@@ -21,6 +22,7 @@ const RouteHandler = () => {
       <Route path="/signup" element={<Signup />} />
       <Route path="/home" element={<Home />} />
       <Route path="/landing" element={<Landing />} />
+      <Route path="/profile" element={<Profile />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );

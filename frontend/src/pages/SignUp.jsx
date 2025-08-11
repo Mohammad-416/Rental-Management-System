@@ -254,9 +254,10 @@ const SignUp = () => {
     }
   };
 
-  const navigateToLogin = () => {
-    navigate('/login');
+  const navigateToProfile = () => {
+    navigate(`/profile?isCustomer=${currentRole === 'customer'}`);
   };
+
 
   const handleNavigation = (page) => {
     if (page === 'home') {
@@ -611,7 +612,7 @@ const SignUp = () => {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={navigateToLogin}
+                onClick={navigateToProfile}
               >
                 Already have an account? Sign In
               </button>
