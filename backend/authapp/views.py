@@ -63,7 +63,8 @@ class RegisterView(APIView):
         if serializer.is_valid():
             user = serializer.save()
             # auto-login (optional)
-            login(request, user)
+            login(request, user, backend='django.contrib.auth.backends.ModelBackend')
+
             return Response(UserSerializer(user).data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
