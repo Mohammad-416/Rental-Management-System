@@ -6,7 +6,7 @@ import {
   FaHeart, FaShare, FaCopy, FaBarcode, FaTags, FaCalendarAlt,
   FaSpinner, FaExclamationTriangle, FaRedo, FaShoppingCart
 } from 'react-icons/fa';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 const CustomerDash = () => {
@@ -15,6 +15,8 @@ const CustomerDash = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const navigate = useNavigate();
   
   // Infinite Scrolling States
   const [products, setProducts] = useState([]);
@@ -39,6 +41,38 @@ const CustomerDash = () => {
       document.body.classList.remove('dark');
     }
   }, [isDarkMode]);
+
+  // Logout function
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const response = await axios.post('http://localhost:8000/api/auth/logout/', {}, {
+        withCredentials: true,
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+        }
+      });
+
+      if (response.status === 200) {
+        // Clear any stored user data
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        sessionStorage.clear();
+        
+        // Redirect to login page or home
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      // Even if API call fails, clear local data and redirect
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate('/login');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
 
   // Fetch products from API
   const fetchProducts = useCallback(async (pageNum = 1, reset = false) => {
@@ -233,7 +267,7 @@ const CustomerDash = () => {
   return (
     <div className={`product-dashboard ${isDarkMode ? 'dark' : ''}`}>
       <style jsx="true">{`
-        /* Same existing styles as before - I'll keep them unchanged */
+        /* Same existing styles as before with additions for logout button */
         :root {
           --blue: #3b82f6;
           --blue-deep: #1d4ed8;
@@ -245,6 +279,9 @@ const CustomerDash = () => {
           --teal-light: #7dd3db;
           --rose: #ff6b6b;
           --rose-light: #ff9999;
+          --red: #dc2626;
+          --red-dark: #b91c1c;
+          --red-light: #fecaca;
           --dark-bg: #0a0e15;
           --dark-card: #111827;
           --dark-card-light: #1f2937;
@@ -259,6 +296,7 @@ const CustomerDash = () => {
           --shadow-dark: 0 25px 50px rgba(0,0,0,0.4);
           --shadow-light: 0 15px 40px rgba(59,130,246,0.15);
           --shadow-blue: 0 15px 45px rgba(59,130,246,0.2);
+          --shadow-red: 0 8px 25px rgba(220,38,38,0.3);
           --blur-glass: blur(20px);
           --speed: 550ms;
           --speed-long: 850ms;
@@ -400,6 +438,8 @@ const CustomerDash = () => {
           height: calc(100vh - 80px);
           overflow-y: auto;
           transition: all var(--speed) ease;
+          display: flex;
+          flex-direction: column;
         }
 
         .dark .sidebar {
@@ -410,6 +450,7 @@ const CustomerDash = () => {
         .sidebar-menu {
           list-style: none;
           padding: 0 1rem;
+          flex: 1;
         }
 
         .sidebar-item {
@@ -454,6 +495,100 @@ const CustomerDash = () => {
           background: linear-gradient(135deg, rgba(76,205,196,0.15), rgba(76,205,196,0.05));
           color: var(--teal);
           box-shadow: 0 4px 12px rgba(76,205,196,0.2);
+        }
+
+        /* Logout Button - Professional MNC Style */
+        .logout-section {
+          padding: 1rem;
+          margin-top: auto;
+          border-top: 1px solid rgba(59,130,246,0.1);
+        }
+
+        .dark .logout-section {
+          border-top-color: rgba(76,205,196,0.1);
+        }
+
+        .logout-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1rem 1.5rem;
+          background: linear-gradient(135deg, var(--red), var(--red-dark));
+          color: white;
+          border: none;
+          border-radius: 12px;
+          font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: all var(--speed) ease;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(220,38,38,0.2);
+        }
+
+        .logout-btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+          transition: left 0.6s ease;
+        }
+
+        .logout-btn:hover::before {
+          left: 100%;
+        }
+
+        .logout-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-red);
+          background: linear-gradient(135deg, #ef4444, var(--red));
+        }
+
+        .logout-btn:active {
+          transform: translateY(0);
+        }
+
+        .logout-btn:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .dark .logout-btn {
+          background: linear-gradient(135deg, #ef4444, #dc2626);
+          box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+        }
+
+        .dark .logout-btn:hover {
+          background: linear-gradient(135deg, #f87171, #ef4444);
+          box-shadow: 0 8px 25px rgba(239,68,68,0.4);
+        }
+
+        .logout-icon {
+          font-size: 1.1rem;
+          transition: transform var(--speed) ease;
+        }
+
+        .logout-btn:hover .logout-icon {
+          transform: translateX(2px);
+        }
+
+        .logout-text {
+          font-weight: 600;
+          letter-spacing: 0.3px;
+        }
+
+        .logout-spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid transparent;
+          border-top: 2px solid currentColor;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
         }
 
         /* Main Content */
@@ -596,7 +731,7 @@ const CustomerDash = () => {
           color: var(--dark-text-soft);
         }
 
-        /* Search and Filter Bar - Removed add product button */
+        /* Search and Filter Bar */
         .search-filter-bar {
           display: flex;
           gap: 1rem;
@@ -1080,7 +1215,7 @@ const CustomerDash = () => {
       </nav>
 
       <div className="dashboard-layout">
-        {/* Sidebar - Removed Revenue and Customers */}
+        {/* Sidebar with Logout Button */}
         <aside className="sidebar">
           <ul className="sidebar-menu">
             <li className="sidebar-item">
@@ -1108,6 +1243,26 @@ const CustomerDash = () => {
               </div>
             </li>
           </ul>
+          
+          {/* Professional Logout Section */}
+          <div className="logout-section">
+            <button 
+              className="logout-btn"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
+              <div className="logout-icon">
+                {isLoggingOut ? (
+                  <div className="logout-spinner"></div>
+                ) : (
+                  <FaSignOutAlt />
+                )}
+              </div>
+              <span className="logout-text">
+                {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
+              </span>
+            </button>
+          </div>
         </aside>
 
         {/* Main Content */}
@@ -1136,7 +1291,7 @@ const CustomerDash = () => {
             ))}
           </div>
 
-          {/* Search and Filter Bar - Removed Add Product Button */}
+          {/* Search and Filter Bar */}
           <div className="search-filter-bar slide-in">
             <div className="search-wrapper">
               <FaSearch className="search-icon" />
