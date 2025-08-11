@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'dj_rest_auth',                   # optional, for REST social endpoints
     'dj_rest_auth.registration',
+    'rentals',
 ]
 
 MIDDLEWARE = [
