@@ -1,694 +1,386 @@
-import { useEffect, useRef, useState } from 'react';
-import * as THREE from 'three';
-import {Link} from 'react-router-dom';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import './Landing.css';
 
 const Landing = () => {
-  const canvasRef = useRef(null);
-  const sceneRef = useRef(null);
-  const [isLoaded, setIsLoaded] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
-  useEffect(() => {
-  const cookies = async () => {
-    try {
-      await axios.get("http://localhost:8000/api/auth/csrf", {
-        withCredentials: true, // 🔹 Allow cookies
+  const handleThemeToggle = () => {
+    setIsDarkMode(prev => !prev);
+  };
+
+  const handleMobileMenuToggle = () => {
+    setIsMobileMenuOpen(prev => !prev);
+  };
+
+  const handleNavigation = (sectionId) => {
+    const target = document.querySelector(sectionId);
+    if (target) {
+      target.scrollIntoView({
+        behavior: 'smooth',
+        block: 'start'
       });
-    } catch (error) {
-      console.error("Error fetching CSRF token:", error);
+      
+      // Close mobile menu if open
+      if (isMobileMenuOpen) {
+        setIsMobileMenuOpen(false);
+      }
     }
   };
 
-    cookies();
-  }, []);
-
   useEffect(() => {
-    let scene, camera, renderer, cube, particles, animationId;
+    if (isDarkMode) {
+      document.body.classList.add('dark');
+    } else {
+      document.body.classList.remove('dark');
+    }
+  }, [isDarkMode]);
 
-    const initThreeJS = () => {
-      if (!canvasRef.current) return;
-
-      // Scene setup
-      scene = new THREE.Scene();
-      camera = new THREE.PerspectiveCamera(75, 1, 0.1, 1000);
-      renderer = new THREE.WebGLRenderer({ alpha: true, antialias: true });
-      renderer.setSize(500, 500);
-      renderer.setClearColor(0x000000, 0);
-      canvasRef.current.appendChild(renderer.domElement);
-
-      // Create main product cube with glow effect
-      const geometry = new THREE.BoxGeometry(2, 2, 2);
-      const material = new THREE.MeshBasicMaterial({
-        color: 0x4ecdc4,
-        wireframe: true,
-        transparent: true,
-        opacity: 0.8
-      });
-      cube = new THREE.Mesh(geometry, material);
-      scene.add(cube);
-
-      // Add inner solid cube
-      const innerGeometry = new THREE.BoxGeometry(1.5, 1.5, 1.5);
-      const innerMaterial = new THREE.MeshBasicMaterial({
-        color: 0xff6b6b,
-        transparent: true,
-        opacity: 0.6
-      });
-      const innerCube = new THREE.Mesh(innerGeometry, innerMaterial);
-      cube.add(innerCube);
-
-      // Create particle system
-      const particleGeometry = new THREE.BufferGeometry();
-      const particleCount = 100;
-      const positions = new Float32Array(particleCount * 3);
-
-      for (let i = 0; i < particleCount * 3; i++) {
-        positions[i] = (Math.random() - 0.5) * 10;
-      }
-
-      particleGeometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
-      const particleMaterial = new THREE.PointsMaterial({
-        color: 0x4ecdc4,
-        size: 0.02,
-        transparent: true,
-        opacity: 0.6
-      });
-
-      particles = new THREE.Points(particleGeometry, particleMaterial);
-      scene.add(particles);
-
-      camera.position.z = 5;
-
-      const animate = () => {
-        animationId = requestAnimationFrame(animate);
-
-        // Rotate the main cube
-        if (cube) {
-          cube.rotation.x += 0.01;
-          cube.rotation.y += 0.01;
-
-          // Pulse effect
-          const time = Date.now() * 0.001;
-          cube.scale.x = 1 + Math.sin(time) * 0.1;
-          cube.scale.y = 1 + Math.sin(time) * 0.1;
-          cube.scale.z = 1 + Math.sin(time) * 0.1;
-        }
-
-        // Rotate particles
-        if (particles) {
-          particles.rotation.y += 0.002;
-        }
-
-        renderer.render(scene, camera);
-      };
-
-      animate();
-      setIsLoaded(true);
-    };
-
-    initThreeJS();
-
-    // Cleanup
-    return () => {
-      if (animationId) {
-        cancelAnimationFrame(animationId);
-      }
-      if (renderer) {
-        renderer.dispose();
-      }
-    };
-  }, []);
-
-  // Scroll animations effect
+  // Navbar background change on scroll
   useEffect(() => {
     const handleScroll = () => {
-      const elements = document.querySelectorAll('.fade-in');
-      
-      elements.forEach(el => {
-        const elementTop = el.getBoundingClientRect().top;
-        const elementVisible = 150;
-        
-        if (elementTop < window.innerHeight - elementVisible) {
-          el.classList.add('visible');
-        }
-      });
-
-      // Navbar scroll effect
       const navbar = document.querySelector('.navbar');
       if (navbar) {
         if (window.scrollY > 50) {
-          navbar.style.background = 'rgba(0, 0, 0, 0.95)';
+          navbar.style.background = isDarkMode 
+            ? 'rgba(15,23,42,0.95)' 
+            : 'rgba(255,255,255,0.98)';
         } else {
-          navbar.style.background = 'rgba(0, 0, 0, 0.9)';
+          navbar.style.background = isDarkMode 
+            ? 'rgba(15,23,42,0.85)' 
+            : 'rgba(255,255,255,0.95)';
         }
       }
     };
 
-    handleScroll();
     window.addEventListener('scroll', handleScroll);
-    
     return () => window.removeEventListener('scroll', handleScroll);
+  }, [isDarkMode]);
+
+  // Intersection Observer for animations
+  useEffect(() => {
+    const observerOptions = {
+      threshold: 0.1,
+      rootMargin: '0px 0px -50px 0px'
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) {
+          entry.target.style.opacity = '1';
+          entry.target.style.transform = 'translateY(0)';
+        }
+      });
+    }, observerOptions);
+
+    const animateElements = document.querySelectorAll('.category-card, .feature-card, .step, .stat-item');
+    
+    animateElements.forEach(el => {
+      el.style.opacity = '0';
+      el.style.transform = 'translateY(30px)';
+      el.style.transition = 'all 0.6s ease';
+      observer.observe(el);
+    });
+
+    return () => {
+      animateElements.forEach(el => observer.unobserve(el));
+    };
   }, []);
 
-  const smoothScroll = (targetId) => {
-    const targetSection = document.querySelector(targetId);
-    if (targetSection) {
-      targetSection.scrollIntoView({
-        behavior: 'smooth'
-      });
-    }
-  };
+  const categories = [
+    { icon: '📱', name: 'Electronics', count: '2.5K+ items' },
+    { icon: '🛋️', name: 'Furniture', count: '1.8K+ items' },
+    { icon: '🔧', name: 'Tools & Equipment', count: '3.2K+ items' },
+    { icon: '🎉', name: 'Party & Events', count: '1.5K+ items' },
+    { icon: '⚽', name: 'Sports & Outdoor', count: '900+ items' },
+    { icon: '🏠', name: 'Appliances', count: '1.2K+ items' }
+  ];
 
   const features = [
     {
+      icon: '📦',
+      title: 'Vast Inventory',
+      description: 'Access thousands of rental items from electronics to furniture, tools, and equipment for any occasion.'
+    },
+    {
       icon: '⚡',
-      title: 'Lightning Fast',
-      description: 'Experience unprecedented speed with our advanced processing technology. 10x faster than conventional alternatives.'
+      title: 'Instant Booking',
+      description: 'Book items instantly with real-time availability. Reserve what you need in just a few clicks.'
     },
     {
-      icon: '🛡',
-      title: 'Military Grade',
-      description: 'Built to withstand extreme conditions with military-grade materials and rigorous testing standards.'
+      icon: '🚛',
+      title: 'Free Delivery',
+      description: 'Enjoy free pickup and delivery service for orders above $50. We bring rentals right to your door.'
     },
     {
-      icon: '🎯',
-      title: 'Precision Engineered',
-      description: 'Every component crafted with microscopic precision for optimal performance and longevity.'
+      icon: '💰',
+      title: 'Flexible Pricing',
+      description: 'Hourly, daily, weekly, or monthly rates. Choose the rental period that fits your needs and budget.'
     },
     {
-      icon: '🔋',
-      title: 'Extended Battery',
-      description: 'Up to 72 hours of continuous operation with our revolutionary power management system.'
+      icon: '🛡️',
+      title: 'Damage Protection',
+      description: 'Complete insurance coverage included. Rent with confidence knowing you\'re fully protected.'
     },
     {
-      icon: '📡',
-      title: 'Smart Connectivity',
-      description: 'Seamlessly connect to all your devices with advanced wireless technology and instant sync.'
+      icon: '📱',
+      title: 'Smart Management',
+      description: 'Track rentals, manage bookings, and get notifications through our intuitive mobile app.'
+    }
+  ];
+
+  const steps = [
+    {
+      number: '1',
+      title: 'Browse & Select',
+      description: 'Explore our vast catalog and find exactly what you need for your project or event.'
     },
     {
-      icon: '🎨',
-      title: 'Premium Design',
-      description: 'Sleek, modern aesthetics combined with ergonomic design for the ultimate user experience.'
+      number: '2',
+      title: 'Book & Pay',
+      description: 'Choose your rental period and complete secure payment. Get instant confirmation.'
+    },
+    {
+      number: '3',
+      title: 'Pickup/Delivery',
+      description: 'Choose convenient pickup or free delivery. Items are clean, tested, and ready to use.'
+    },
+    {
+      number: '4',
+      title: 'Enjoy & Return',
+      description: 'Use your rental items worry-free with damage protection. Return or extend easily.'
     }
   ];
 
   const stats = [
-    { number: '50K+', label: 'Happy Customers' },
-    { number: '99.9%', label: 'Reliability Rate' },
-    { number: '24/7', label: 'Support Available' },
-    { number: '5★', label: 'Average Rating' }
+    { number: '10K+', label: 'Rental Items' },
+    { number: '98%', label: 'Customer Satisfaction' },
+    { number: '24/7', label: 'Customer Support' },
+    { number: '500+', label: 'Cities Covered' }
   ];
 
   return (
-    <div className="bg-black text-white overflow-x-hidden" style={{ fontFamily: 'Arial, sans-serif', lineHeight: '1.6' }}>
-      <style jsx="true">{`
-        * {
-          margin: 0;
-          padding: 0;
-          box-sizing: border-box;
-        }
+    <div className={isDarkMode ? 'dark' : ''}>
+      <div className="landing-container">
+        
+        {/* Navigation */}
+        <nav className="navbar">
+          <div className="nav-container">
+            <div className="logo">RentalHub</div>
 
-        /* Navigation */
-        .navbar {
-          position: fixed;
-          top: 0;
-          width: 100%;
-          z-index: 1000;
-          padding: 20px 5%;
-          background: rgba(0, 0, 0, 0.9);
-          backdrop-filter: blur(10px);
-          transition: all 0.3s ease;
-        }
-
-        .nav-container {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-        }
-
-        .logo {
-          font-size: 1.8rem;
-          font-weight: bold;
-          background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .nav-links {
-          display: flex;
-          list-style: none;
-          gap: 2rem;
-        }
-
-        .nav-links a {
-          color: #fff;
-          text-decoration: none;
-          transition: color 0.3s ease;
-          position: relative;
-          cursor: pointer;
-        }
-
-        .nav-links a:hover {
-          color: #4ecdc4;
-        }
-
-        .nav-links a::after {
-          content: '';
-          position: absolute;
-          bottom: -5px;
-          left: 0;
-          width: 0;
-          height: 2px;
-          background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-          transition: width 0.3s ease;
-        }
-
-        .nav-links a:hover::after {
-          width: 100%;
-        }
-
-        /* Hero Section */
-        .hero {
-          height: 100vh;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          padding: 0 5%;
-          position: relative;
-          background: radial-gradient(ellipse at center, rgba(76, 205, 196, 0.1) 0%, rgba(0, 0, 0, 1) 70%);
-        }
-
-        .hero-content {
-          flex: 1;
-          max-width: 600px;
-          z-index: 10;
-        }
-
-        .hero-title {
-          font-size: 4rem;
-          font-weight: 900;
-          margin-bottom: 1rem;
-          background: linear-gradient(45deg, #fff, #4ecdc4);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          line-height: 1.1;
-        }
-
-        .hero-subtitle {
-          font-size: 1.3rem;
-          color: #ccc;
-          margin-bottom: 2rem;
-          opacity: 0;
-          animation: fadeInUp 1s ease 0.5s forwards;
-        }
-
-        .hero-description {
-          font-size: 1.1rem;
-          color: #aaa;
-          margin-bottom: 3rem;
-          opacity: 0;
-          animation: fadeInUp 1s ease 0.7s forwards;
-        }
-
-        .cta-buttons {
-          display: flex;
-          gap: 1rem;
-          flex-wrap: wrap;
-          opacity: 0;
-          animation: fadeInUp 1s ease 0.9s forwards;
-        }
-
-        .btn {
-          padding: 15px 30px;
-          border: none;
-          border-radius: 50px;
-          font-size: 1rem;
-          font-weight: 600;
-          cursor: pointer;
-          transition: all 0.3s ease;
-          text-decoration: none;
-          display: inline-block;
-        }
-
-        .btn-primary {
-          background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-          color: #fff;
-          box-shadow: 0 10px 30px rgba(76, 205, 196, 0.3);
-        }
-
-        .btn-primary:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 15px 40px rgba(76, 205, 196, 0.5);
-        }
-
-        .btn-secondary {
-          background: transparent;
-          color: #fff;
-          border: 2px solid #4ecdc4;
-        }
-
-        .btn-secondary:hover {
-          background: #4ecdc4;
-          color: #000;
-          transform: translateY(-3px);
-        }
-
-        /* 3D Canvas */
-        .threejs-canvas {
-          position: absolute;
-          right: 5%;
-          top: 50%;
-          transform: translateY(-50%);
-          width: 500px;
-          height: 500px;
-          z-index: 5;
-        }
-
-        /* Features Section */
-        .features {
-          padding: 100px 5%;
-          background: linear-gradient(180deg, #000 0%, #0a0a0a 100%);
-        }
-
-        .section-title {
-          text-align: center;
-          font-size: 3rem;
-          margin-bottom: 3rem;
-          background: linear-gradient(45deg, #fff, #4ecdc4);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-        }
-
-        .features-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-          gap: 2rem;
-          margin-top: 4rem;
-        }
-
-        .feature-card {
-          background: linear-gradient(145deg, #1a1a1a, #0d0d0d);
-          padding: 2rem;
-          border-radius: 20px;
-          border: 1px solid rgba(76, 205, 196, 0.2);
-          transition: all 0.3s ease;
-          position: relative;
-          overflow: hidden;
-        }
-
-        .feature-card::before {
-          content: '';
-          position: absolute;
-          top: -50%;
-          left: -50%;
-          width: 200%;
-          height: 200%;
-          background: linear-gradient(45deg, transparent, rgba(76, 205, 196, 0.1), transparent);
-          transform: rotate(45deg);
-          transition: all 0.3s ease;
-          opacity: 0;
-        }
-
-        .feature-card:hover::before {
-          opacity: 1;
-          animation: shimmer 2s linear infinite;
-        }
-
-        .feature-card:hover {
-          transform: translateY(-10px);
-          box-shadow: 0 20px 40px rgba(76, 205, 196, 0.2);
-          border-color: #4ecdc4;
-        }
-
-        .feature-icon {
-          width: 60px;
-          height: 60px;
-          background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          margin-bottom: 1rem;
-          font-size: 1.5rem;
-        }
-
-        .feature-title {
-          font-size: 1.3rem;
-          margin-bottom: 1rem;
-          color: #fff;
-        }
-
-        .feature-description {
-          color: #aaa;
-          line-height: 1.6;
-        }
-
-        /* Stats Section */
-        .stats {
-          padding: 80px 5%;
-          background: #000;
-          text-align: center;
-        }
-
-        .stats-grid {
-          display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-          gap: 2rem;
-          margin-top: 3rem;
-        }
-
-        .stat-item {
-          padding: 2rem;
-        }
-
-        .stat-number {
-          font-size: 3rem;
-          font-weight: bold;
-          background: linear-gradient(45deg, #ff6b6b, #4ecdc4);
-          -webkit-background-clip: text;
-          -webkit-text-fill-color: transparent;
-          background-clip: text;
-          margin-bottom: 0.5rem;
-        }
-
-        .stat-label {
-          color: #aaa;
-          font-size: 1.1rem;
-        }
-
-        /* CTA Section */
-        .cta-section {
-          padding: 100px 5%;
-          background: linear-gradient(45deg, #1a1a1a, #0a0a0a);
-          text-align: center;
-        }
-
-        .cta-title {
-          font-size: 2.5rem;
-          margin-bottom: 1rem;
-          color: #fff;
-        }
-
-        .cta-description {
-          font-size: 1.2rem;
-          color: #aaa;
-          margin-bottom: 2rem;
-          max-width: 600px;
-          margin-left: auto;
-          margin-right: auto;
-        }
-
-        /* Footer */
-        .footer {
-          padding: 40px 5%;
-          background: #000;
-          border-top: 1px solid #333;
-          text-align: center;
-        }
-
-        .footer-content {
-          display: flex;
-          justify-content: space-between;
-          align-items: center;
-          flex-wrap: wrap;
-          gap: 1rem;
-        }
-
-        .social-links {
-          display: flex;
-          gap: 1rem;
-        }
-
-        .social-links a {
-          color: #aaa;
-          font-size: 1.2rem;
-          transition: color 0.3s ease;
-          cursor: pointer;
-        }
-
-        .social-links a:hover {
-          color: #4ecdc4;
-        }
-
-        /* Animations */
-        @keyframes fadeInUp {
-          from {
-            opacity: 0;
-            transform: translateY(30px);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0);
-          }
-        }
-
-        @keyframes shimmer {
-          0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
-          100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
-        }
-
-        @keyframes float {
-          0%, 100% { transform: translateY(0); }
-          50% { transform: translateY(-10px); }
-        }
-
-        /* Scroll animations */
-        .fade-in {
-          opacity: 0;
-          transform: translateY(30px);
-          transition: all 0.8s ease;
-        }
-
-        .fade-in.visible {
-          opacity: 1;
-          transform: translateY(0);
-        }
-
-        /* Responsive Design */
-        @media (max-width: 768px) {
-          .hero {
-            flex-direction: column;
-            text-align: center;
-            padding: 100px 5% 50px;
-          }
-
-          .hero-title {
-            font-size: 2.5rem;
-          }
-
-          .threejs-canvas {
-            position: relative;
-            right: auto;
-            top: auto;
-            transform: none;
-            width: 300px;
-            height: 300px;
-            margin-top: 2rem;
-          }
-
-          .nav-links {
-            display: none;
-          }
-
-          .section-title {
-            font-size: 2rem;
-          }
-
-          .features-grid {
-            grid-template-columns: 1fr;
-          }
-
-          .stats-grid {
-            grid-template-columns: repeat(2, 1fr);
-          }
-        }
-      `}</style>
-
-      {/* Navigation */}
-      <nav className="navbar">
-        <div className="nav-container">
-          <div className="logo">NEXUS</div>
-          <ul className="nav-links">
-            <li><a onClick={() => smoothScroll('#home')}>Home</a></li>
-            <li><a onClick={() => smoothScroll('#features')}>Features</a></li>
-            <li><a onClick={() => smoothScroll('#specs')}>Specs</a></li>
-            <li><a onClick={() => smoothScroll('#contact')}>Contact</a></li>
-          </ul>
-        </div>
-      </nav>
-
-      {/* Hero Section */}
-      <section className="hero" id="home">
-        <div className="hero-content">
-          <h1 className="hero-title">NEXUS Pro</h1>
-          <h2 className="hero-subtitle">Revolutionary Performance Technology</h2>
-          <p className="hero-description">
-            Experience the future of innovation with our cutting-edge product. Designed for professionals who demand excellence and reliability in every detail.
-          </p>
-          <div className="cta-buttons">
-            <a href="#" className="btn btn-primary">Order Now - $299</a>
-            <Link to="signup" className="btn btn-secondary">Get Started</Link>
-          </div>
-        </div>
-        <div className="threejs-canvas" ref={canvasRef}></div>
-      </section>
-
-      {/* Features Section */}
-      <section className="features fade-in" id="features">
-        <h2 className="section-title">Exceptional Features</h2>
-        <div className="features-grid">
-          {features.map((feature, index) => (
-            <div key={index} className="feature-card">
-              <div className="feature-icon">{feature.icon}</div>
-              <h3 className="feature-title">{feature.title}</h3>
-              <p className="feature-description">{feature.description}</p>
+            {/* Desktop Navigation */}
+            <div className="nav-right">
+              <button onClick={() => handleNavigation('#hero')} className="nav-link">
+                Home
+              </button>
+              <button onClick={() => handleNavigation('#about')} className="nav-link">
+                About
+              </button>
+              <button onClick={() => handleNavigation('#contact')} className="nav-link">
+                Contact
+              </button>
             </div>
-          ))}
-        </div>
-      </section>
 
-      {/* Stats Section */}
-      <section className="stats fade-in" id="specs">
-        <h2 className="section-title">Proven Excellence</h2>
-        <div className="stats-grid">
-          {stats.map((stat, index) => (
-            <div key={index} className="stat-item">
-              <div className="stat-number">{stat.number}</div>
-              <div className="stat-label">{stat.label}</div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section className="cta-section fade-in" id="contact">
-        <h2 className="cta-title">Ready to Experience the Future?</h2>
-        <p className="cta-description">
-          Join thousands of professionals who have already transformed their workflow with NEXUS Pro. 
-          Order now and get free shipping plus a 30-day money-back guarantee.
-        </p>
-        <div className="cta-buttons">
-          <a href="#" className="btn btn-primary">Order Now - $299</a>
-          <a href="#" className="btn btn-secondary">Request Demo</a>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="footer">
-        <div className="footer-content">
-          <div className="logo">NEXUS</div>
-          <div>© 2025 NEXUS Technologies. All rights reserved.</div>
-          <div className="social-links">
-            <a href="#">📘</a>
-            <a href="#">🐦</a>
-            <a href="#">📷</a>
-            <a href="#">💼</a>
+            {/* Mobile Hamburger Menu */}
+            <button className="mobile-menu-btn" onClick={handleMobileMenuToggle}>
+              <span className={`hamburger-line ${isMobileMenuOpen ? 'rotate-45 translate-y-1.5' : ''}`}></span>
+              <span className={`hamburger-line ${isMobileMenuOpen ? 'opacity-0' : ''}`}></span>
+              <span className={`hamburger-line ${isMobileMenuOpen ? '-rotate-45 -translate-y-1.5' : ''}`}></span>
+            </button>
           </div>
-        </div>
-      </footer>
+
+          {/* Mobile Menu Dropdown */}
+          <div className={`mobile-menu ${isMobileMenuOpen ? 'mobile-menu-open' : ''}`}>
+            <div className="mobile-menu-content">
+              <button onClick={() => handleNavigation('#hero')} className="mobile-nav-link">
+                Home
+              </button>
+              <button onClick={() => handleNavigation('#about')} className="mobile-nav-link">
+                About
+              </button>
+              <button onClick={() => handleNavigation('#contact')} className="mobile-nav-link">
+                Contact
+              </button>
+            </div>
+          </div>
+        </nav>
+
+        {/* Hero Section */}
+        <section className="hero" id="hero">
+          <div className="hero-content">
+            <h1 className="hero-title">Rent Anything, Anytime</h1>
+            <p className="hero-subtitle">
+              Your Ultimate Rental Marketplace - From electronics to furniture, tools to party equipment. 
+              Rent what you need, when you need it.
+            </p>
+            <div className="hero-buttons">
+              <Link to="/signup" className="btn-primary">
+                Get Started Free
+              </Link>
+              <button className="btn-secondary" onClick={() => alert('Redirecting to products...')}>
+                Browse Rentals
+              </button>
+            </div>
+          </div>
+        </section>
+
+        {/* Categories Section */}
+        <section className="categories" id="about">
+          <div className="section-container">
+            <h2 className="section-title">Rental Categories</h2>
+            <p className="section-subtitle">
+              Discover thousands of rental items across multiple categories
+            </p>
+            
+            <div className="categories-grid">
+              {categories.map((category, index) => (
+                <div key={index} className="category-card">
+                  <div className="category-icon">{category.icon}</div>
+                  <h3 className="category-name">{category.name}</h3>
+                  <p className="category-count">{category.count}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Features Section */}
+        <section className="features">
+          <div className="section-container">
+            <h2 className="section-title">Why Choose RentalHub?</h2>
+            <p className="section-subtitle">
+              Everything you need for seamless rental experience
+            </p>
+            
+            <div className="features-grid">
+              {features.map((feature, index) => (
+                <div key={index} className="feature-card">
+                  <div className="feature-icon">{feature.icon}</div>
+                  <h3 className="feature-title">{feature.title}</h3>
+                  <p className="feature-description">{feature.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* How it Works */}
+        <section className="how-it-works">
+          <div className="section-container">
+            <h2 className="section-title">How It Works</h2>
+            <p className="section-subtitle">
+              Get what you need in just a few simple steps
+            </p>
+            
+            <div className="steps-grid">
+              {steps.map((step, index) => (
+                <div key={index} className="step">
+                  <div className="step-number">{step.number}</div>
+                  <h3 className="step-title">{step.title}</h3>
+                  <p className="step-description">{step.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* Stats Section */}
+        <section className="stats">
+          <div className="section-container">
+            <h2 className="section-title">Trusted by Thousands</h2>
+            <div className="stats-grid">
+              {stats.map((stat, index) => (
+                <div key={index} className="stat-item">
+                  <div className="stat-number">{stat.number}</div>
+                  <div className="stat-label">{stat.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* CTA Section */}
+        <section className="cta" id="contact">
+          <div className="section-container">
+            <h2 className="cta-title">Ready to Start Renting?</h2>
+            <p className="cta-subtitle">
+              Join thousands of smart consumers who save money by renting instead of buying.
+            </p>
+            <div className="cta-buttons">
+              <Link to="/signup" className="btn-primary">
+                Create Account
+              </Link>
+              <Link to="/signin" className="btn-secondary">
+                Sign In
+              </Link>
+            </div>
+          </div>
+        </section>
+
+        {/* Footer */}
+        <footer className="footer">
+          <div className="footer-container">
+            <div className="footer-content">
+              <div className="logo">RentalHub</div>
+              <p>© 2025 RentalHub. Built with ❤️ by <a href="https://github.com/mohammad-416" target="_blank" rel="noopener noreferrer" className="footer-link">Bit Lords</a></p>
+              <div className="social-links">
+                <a 
+                  href="https://github.com/mohammad-416" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="social-link github-link"
+                  title="Visit GitHub Profile"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                  </svg>
+                </a>
+                <a 
+                  href="https://github.com/mohammad-416?tab=repositories" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="social-link github-repos"
+                  title="View Repositories"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M3 3C1.89 3 1 3.89 1 5V19C1 20.11 1.89 21 3 21H21C22.11 21 23 20.11 23 19V5C23 3.89 22.11 3 21 3H3M3 5H21V19H3V5M5 7V9H19V7H5M5 11V13H19V11H5M5 15V17H19V15H5Z"/>
+                  </svg>
+                </a>
+                <a 
+                  href="https://github.com/mohammad-416/mohammad-416" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="social-link github-profile"
+                  title="About Me"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                  </svg>
+                </a>
+                <a 
+                  href="https://github.com/mohammad-416?tab=stars" 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  className="social-link github-stars"
+                  title="Starred Repositories"
+                >
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+          </div>
+        </footer>
+
+        {/* Theme Toggle Button */}
+        <button className="theme-toggle" onClick={handleThemeToggle}>
+          <div className={`toggle-slider ${isDarkMode ? 'toggle-slider-dark' : ''}`}>
+            {isDarkMode ? '🌙' : '☀️'}
+          </div>
+        </button>
+      </div>
     </div>
   );
 };
