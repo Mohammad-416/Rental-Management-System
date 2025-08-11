@@ -1,6 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import './Landing.css';
+import hammerImg from '../assets/hammer.png';
+import helmetImg from '../assets/helmet.png';
+import furnitureImg from '../assets/sofa.png';
+import partyImg from '../assets/party.png';
+import phoneImg from '../assets/phone.png';
+import appliancesImg from '../assets/appliances.png';
 
 const Landing = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
@@ -21,8 +27,6 @@ const Landing = () => {
         behavior: 'smooth',
         block: 'start'
       });
-      
-      // Close mobile menu if open
       if (isMobileMenuOpen) {
         setIsMobileMenuOpen(false);
       }
@@ -37,18 +41,17 @@ const Landing = () => {
     }
   }, [isDarkMode]);
 
-  // Navbar background change on scroll
   useEffect(() => {
     const handleScroll = () => {
       const navbar = document.querySelector('.navbar');
       if (navbar) {
         if (window.scrollY > 50) {
-          navbar.style.background = isDarkMode 
-            ? 'rgba(15,23,42,0.95)' 
+          navbar.style.background = isDarkMode
+            ? 'rgba(15,23,42,0.95)'
             : 'rgba(255,255,255,0.98)';
         } else {
-          navbar.style.background = isDarkMode 
-            ? 'rgba(15,23,42,0.85)' 
+          navbar.style.background = isDarkMode
+            ? 'rgba(15,23,42,0.85)'
             : 'rgba(255,255,255,0.95)';
         }
       }
@@ -58,7 +61,6 @@ const Landing = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, [isDarkMode]);
 
-  // Intersection Observer for animations
   useEffect(() => {
     const observerOptions = {
       threshold: 0.1,
@@ -75,7 +77,7 @@ const Landing = () => {
     }, observerOptions);
 
     const animateElements = document.querySelectorAll('.category-card, .feature-card, .step, .stat-item');
-    
+
     animateElements.forEach(el => {
       el.style.opacity = '0';
       el.style.transform = 'translateY(30px)';
@@ -89,12 +91,12 @@ const Landing = () => {
   }, []);
 
   const categories = [
-    { icon: '📱', name: 'Electronics', count: '2.5K+ items' },
-    { icon: '🛋️', name: 'Furniture', count: '1.8K+ items' },
-    { icon: '🔧', name: 'Tools & Equipment', count: '3.2K+ items' },
-    { icon: '🎉', name: 'Party & Events', count: '1.5K+ items' },
-    { icon: '⚽', name: 'Sports & Outdoor', count: '900+ items' },
-    { icon: '🏠', name: 'Appliances', count: '1.2K+ items' }
+    { name: "Tools & Eqippet", count: "120 Items", image: hammerImg },
+    { name: "Furniture", count: "200 Items", image: furnitureImg },
+    { name: "Electronics", count: "200 Items", image: phoneImg },
+    { name: "sports & Outdoor", count: "200 Items", image: helmetImg },
+    { name: "Appliances", count: "200 Items", image: appliancesImg },
+    { name: "Party & Events", count: "200 Items", image: partyImg }
   ];
 
   const features = [
@@ -163,7 +165,7 @@ const Landing = () => {
   return (
     <div className={isDarkMode ? 'dark' : ''}>
       <div className="landing-container">
-        
+
         {/* Navigation */}
         <nav className="navbar">
           <div className="nav-container">
@@ -211,14 +213,14 @@ const Landing = () => {
           <div className="hero-content">
             <h1 className="hero-title overflow-hidden">Rent Anything, Anytime</h1>
             <p className="hero-subtitle">
-              Your Ultimate Rental Marketplace - From electronics to furniture, tools to party equipment. 
+              Your Ultimate Rental Marketplace - From electronics to furniture, tools to party equipment.
               Rent what you need, when you need it.
             </p>
             <div className="hero-buttons">
               <Link to="/signup" className="btn-primary">
                 Get Started Free
               </Link>
-              <button className="btn-secondary" onClick={() => alert('Redirecting to products...')}>
+              <button className="btn-primary" onClick={() => alert('Redirecting to products...')}>
                 Browse Rentals
               </button>
             </div>
@@ -232,14 +234,37 @@ const Landing = () => {
             <p className="section-subtitle">
               Discover thousands of rental items across multiple categories
             </p>
-            
+
             <div className="categories-grid">
               {categories.map((category, index) => (
-                <div key={index} className="category-card">
-                  <div className="category-icon">{category.icon}</div>
-                  <h3 className="category-name">{category.name}</h3>
-                  <p className="category-count">{category.count}</p>
+                <div
+                  key={index}
+                  className="category-card"
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    width: '180px', // increased from ~150px
+                    height: '180px', // increased height
+                    padding: '1rem',
+                    borderRadius: '12px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                    backgroundColor: '#fff',
+                  }}
+                >
+                  <img
+                    src={category.image}
+                    alt={category.name}
+                    style={{
+                      width: '80px',  // slightly larger
+                      height: '80px', // slightly larger
+                      objectFit: 'contain',
+                    }}
+                  />
+                  <p style={{ marginTop: '0.75rem', textAlign: 'center' }}>{category.name}</p>
                 </div>
+
               ))}
             </div>
           </div>
@@ -252,7 +277,7 @@ const Landing = () => {
             <p className="section-subtitle">
               Everything you need for seamless rental experience
             </p>
-            
+
             <div className="features-grid">
               {features.map((feature, index) => (
                 <div key={index} className="feature-card">
@@ -272,7 +297,7 @@ const Landing = () => {
             <p className="section-subtitle">
               Get what you need in just a few simple steps
             </p>
-            
+
             <div className="steps-grid">
               {steps.map((step, index) => (
                 <div key={index} className="step">
@@ -325,48 +350,48 @@ const Landing = () => {
               <div className="logo">RentalHub</div>
               <p>© 2025 RentalHub. Built with ❤️ by <a href="https://github.com/mohammad-416" target="_blank" rel="noopener noreferrer" className="footer-link">Bit Lords</a></p>
               <div className="social-links">
-                <a 
-                  href="https://github.com/mohammad-416" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://github.com/mohammad-416"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="social-link github-link"
                   title="Visit GitHub Profile"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                    <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z" />
                   </svg>
                 </a>
-                <a 
-                  href="https://github.com/mohammad-416?tab=repositories" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://github.com/mohammad-416?tab=repositories"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="social-link github-repos"
                   title="View Repositories"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M3 3C1.89 3 1 3.89 1 5V19C1 20.11 1.89 21 3 21H21C22.11 21 23 20.11 23 19V5C23 3.89 22.11 3 21 3H3M3 5H21V19H3V5M5 7V9H19V7H5M5 11V13H19V11H5M5 15V17H19V15H5Z"/>
+                    <path d="M3 3C1.89 3 1 3.89 1 5V19C1 20.11 1.89 21 3 21H21C22.11 21 23 20.11 23 19V5C23 3.89 22.11 3 21 3H3M3 5H21V19H3V5M5 7V9H19V7H5M5 11V13H19V11H5M5 15V17H19V15H5Z" />
                   </svg>
                 </a>
-                <a 
-                  href="https://github.com/mohammad-416/mohammad-416" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://github.com/mohammad-416/mohammad-416"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="social-link github-profile"
                   title="About Me"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+                    <path d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z" />
                   </svg>
                 </a>
-                <a 
-                  href="https://github.com/mohammad-416?tab=stars" 
-                  target="_blank" 
-                  rel="noopener noreferrer" 
+                <a
+                  href="https://github.com/mohammad-416?tab=stars"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="social-link github-stars"
                   title="Starred Repositories"
                 >
                   <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z"/>
+                    <path d="M12,17.27L18.18,21L16.54,13.97L22,9.24L14.81,8.62L12,2L9.19,8.62L2,9.24L7.45,13.97L5.82,21L12,17.27Z" />
                   </svg>
                 </a>
               </div>
