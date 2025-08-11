@@ -179,9 +179,9 @@ body.dark .signup-container{
 .role-tabs {
   display: flex;
   background: rgba(59,130,246,0.08);
-  border-radius: 16px;
+  border-radius: 35px;
   margin-bottom: 2rem;
-  padding: 6px;
+  padding: 10px;
   border: 1px solid rgba(59,130,246,0.15);
 }
 
