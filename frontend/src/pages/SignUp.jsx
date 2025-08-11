@@ -319,13 +319,13 @@ const SignUp = () => {
               className={`role-tab ${currentRole === 'user' ? 'active' : ''}`}
               onClick={() => handleRoleChange('user')}
             >
-              User Signup
+              Occupant Signup
             </button>
             <button
               className={`role-tab ${currentRole === 'customer' ? 'active' : ''}`}
               onClick={() => handleRoleChange('customer')}
             >
-              Customer Signup
+              Client Signup
             </button>
           </div>
 
