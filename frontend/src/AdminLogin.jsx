@@ -216,7 +216,7 @@ const AdminPanel = () => {
   // Navigation handlers
   const handleBackToUser = () => {
     alert('Redirecting to user login page...');
-    navigate('./login');
+    navigate('/login');
   };
 
   const handleEmergencyAccess = () => {
