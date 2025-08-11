@@ -43,135 +43,146 @@ const CustomerDash = () => {
 
   // Fetch products from API
   const fetchProducts = useCallback(async (pageNum = 1, reset = false) => {
-    if (loading && !reset) return;
+  if (loading && !reset) return;
+  
+  setLoading(true);
+  setError(null);
+
+  try {
+    const params = {
+      ...(searchTerm && { search: searchTerm }),
+      ...(filterCategory !== 'all' && { category: filterCategory })
+    };
+
+    const response = await axios.get('http://localhost:8000/api/rentals/products/', {
+      params,
+      withCredentials: true
+    });
+
+    const newProductsRaw = response.data.results || response.data.data || response.data;
+
+    // Transform API fields to match your grid's expected shape
+    const newProducts = newProductsRaw.map(item => ({
+      id: item.id,
+      name: item.title,
+      category: "General",
+      price: `$${item.price_per_day}/day`,
+      stock: 10,
+      available: 5,
+      status: item.is_approved ? "active" : "pending",
+      rating: 4.5,
+      rentals: 0,
+      revenue: "$0",
+      image: item.main_image || "",
+    }));
+
+    const totalCount = newProducts.length; // total = only available items
+
+    // Always replace instead of append
+    setProducts(newProducts);
+
+    setHasMore(false); // no infinite scrolling
+    setPage(1); // reset to first page
+
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    setError(err.response?.data?.message || 'Failed to load products');
     
-    setLoading(true);
-    setError(null);
-
-    try {
-      const params = {
-        page: pageNum,
-        limit: 12,
-        ...(searchTerm && { search: searchTerm }),
-        ...(filterCategory !== 'all' && { category: filterCategory })
-      };
-
-      const response = await axios.get('http://localhost:8000/api/rentals/products/', {
-        params,
-        withCredentials: true
-      });
-
-      const newProducts = response.data.results || response.data.data || response.data;
-      const totalCount = response.data.count || response.data.total || 1000;
-      
-      if (reset || pageNum === 1) {
-        setProducts(newProducts);
-      } else {
-        setProducts(prev => [...prev, ...newProducts]);
-      }
-
-      setHasMore(newProducts.length > 0 && products.length + newProducts.length < totalCount);
-      setPage(pageNum + 1);
-
-    } catch (err) {
-      console.error('Error fetching products:', err);
-      setError(err.response?.data?.message || 'Failed to load products');
-      
-      // Fallback to sample data if API fails
-      if (pageNum === 1) {
-        const sampleProducts = [
-          { 
-            id: 'P001', 
-            name: 'Professional DSLR Camera', 
-            category: 'Electronics', 
-            price: '$240/day', 
-            stock: 5, 
-            available: 3,
-            status: 'active',
-            rating: 4.8,
-            rentals: 127,
-            revenue: '$30,480',
-            image: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=300&h=200&fit=crop'
-          },
-          { 
-            id: 'P002', 
-            name: 'Gaming Laptop RTX 4080', 
-            category: 'Electronics', 
-            price: '$180/day', 
-            stock: 8, 
-            available: 6,
-            status: 'active',
-            rating: 4.9,
-            rentals: 89,
-            revenue: '$16,020',
-            image: 'https://images.unsplash.com/photo-1593642702749-b7d2a804fbcf?w=300&h=200&fit=crop'
-          },
-          { 
-            id: 'P003', 
-            name: 'Party Sound System', 
-            category: 'Audio Equipment', 
-            price: '$320/day', 
-            stock: 3, 
-            available: 1,
-            status: 'low_stock',
-            rating: 4.7,
-            rentals: 156,
-            revenue: '$49,920',
-            image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop'
-          },
-          { 
-            id: 'P004', 
-            name: 'Electric Drill Set', 
-            category: 'Tools', 
-            price: '$80/day', 
-            stock: 12, 
-            available: 10,
-            status: 'active',
-            rating: 4.6,
-            rentals: 203,
-            revenue: '$16,240',
-            image: 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=300&h=200&fit=crop'
-          },
-          { 
-            id: 'P005', 
-            name: 'MacBook Pro M3', 
-            category: 'Electronics', 
-            price: '$200/day', 
-            stock: 6, 
-            available: 4,
-            status: 'active',
-            rating: 4.9,
-            rentals: 78,
-            revenue: '$15,600',
-            image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=300&h=200&fit=crop'
-          },
-          { 
-            id: 'P006', 
-            name: 'Wedding Decoration Kit', 
-            category: 'Events', 
-            price: '$450/day', 
-            stock: 4, 
-            available: 2,
-            status: 'active',
-            rating: 4.8,
-            rentals: 92,
-            revenue: '$41,400',
-            image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&h=200&fit=crop'
-          }
-        ];
-        setProducts(sampleProducts);
-        setHasMore(false);
-      }
-    } finally {
-      setLoading(false);
-      setInitialLoading(false);
+    if (pageNum === 1) {
+      const sampleProducts = [
+        { 
+          id: 'P001', 
+          name: 'Professional DSLR Camera', 
+          category: 'Electronics', 
+          price: '$240/day', 
+          stock: 5, 
+          available: 3,
+          status: 'active',
+          rating: 4.8,
+          rentals: 127,
+          revenue: '$30,480',
+          image: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=300&h=200&fit=crop'
+        },
+        { 
+          id: 'P002', 
+          name: 'Gaming Laptop RTX 4080', 
+          category: 'Electronics', 
+          price: '$180/day', 
+          stock: 8, 
+          available: 6,
+          status: 'active',
+          rating: 4.9,
+          rentals: 89,
+          revenue: '$16,020',
+          image: 'https://images.unsplash.com/photo-1593642702749-b7d2a804fbcf?w=300&h=200&fit=crop'
+        },
+        { 
+          id: 'P003', 
+          name: 'Party Sound System', 
+          category: 'Audio Equipment', 
+          price: '$320/day', 
+          stock: 3, 
+          available: 1,
+          status: 'low_stock',
+          rating: 4.7,
+          rentals: 156,
+          revenue: '$49,920',
+          image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop'
+        },
+        { 
+          id: 'P004', 
+          name: 'Electric Drill Set', 
+          category: 'Tools', 
+          price: '$80/day', 
+          stock: 12, 
+          available: 10,
+          status: 'active',
+          rating: 4.6,
+          rentals: 203,
+          revenue: '$16,240',
+          image: 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=300&h=200&fit=crop'
+        },
+        { 
+          id: 'P005', 
+          name: 'MacBook Pro M3', 
+          category: 'Electronics', 
+          price: '$200/day', 
+          stock: 6, 
+          available: 4,
+          status: 'active',
+          rating: 4.9,
+          rentals: 78,
+          revenue: '$15,600',
+          image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=300&h=200&fit=crop'
+        },
+        { 
+          id: 'P006', 
+          name: 'Wedding Decoration Kit', 
+          category: 'Events', 
+          price: '$450/day', 
+          stock: 4, 
+          available: 2,
+          status: 'active',
+          rating: 4.8,
+          rentals: 92,
+          revenue: '$41,400',
+          image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&h=200&fit=crop'
+        }
+      ];
+      setProducts(sampleProducts);
+      setHasMore(false);
     }
-  }, [searchTerm, filterCategory, loading, products.length]);
+  } finally {
+    setLoading(false);
+    setInitialLoading(false);
+  }
+}, [searchTerm, filterCategory, loading, products.length]);
 
-  // Initial load
-  useEffect(() => {
-    fetchProducts(1, true);
-  }, []);
+// Initial load
+useEffect(() => {
+  fetchProducts(1, true);
+}, []);
+
 
   // Search and filter debounce
   useEffect(() => {
