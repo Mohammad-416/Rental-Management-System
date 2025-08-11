@@ -170,7 +170,7 @@ const Login = () => {
       );
 
       console.log("Login successful:", response.data);
-      navigate('/home');
+      navigate('/customerDashboard');
     } catch (error) {
       console.error("Login failed:", error.response?.data || error.message);
     }
