@@ -1,4 +1,3 @@
-# authapp/serializers.py
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 
@@ -9,7 +8,10 @@ class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ['id', 'username', 'name', 'email', 'phone', 'address', 'profile_pic', 'is_superuser']
+        fields = [
+            'id', 'username', 'name', 'email', 'phone', 'address',
+            'profile_pic', 'is_customer', 'gst_number', 'business_name', 'is_superuser'
+        ]
         read_only_fields = ['id', 'is_superuser']
 
 
@@ -38,7 +40,21 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class UpdateProfileSerializer(serializers.ModelSerializer):
     profile_pic = serializers.ImageField(required=False, allow_null=True)
+    is_customer = serializers.BooleanField(required=True)
 
     class Meta:
         model = User
-        fields = ['name', 'phone', 'address', 'profile_pic']
+        fields = [
+            'name', 'phone', 'address', 'profile_pic',
+            'is_customer', 'gst_number', 'business_name'
+        ]
+
+    def validate(self, data):
+        is_customer = data.get('is_customer', self.instance.is_customer)
+
+        if not is_customer:
+            if not data.get('gst_number') or not data.get('business_name'):
+                raise serializers.ValidationError({
+                    "detail": "GST number and business name are required for sellers."
+                })
+        return data

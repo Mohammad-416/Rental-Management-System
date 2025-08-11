@@ -8,8 +8,13 @@ class CustomUser(AbstractUser):
     address = models.TextField(blank=True, null=True)
     profile_pic = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
 
+    is_customer = models.BooleanField(default=True)
+    gst_number = models.CharField(max_length=15, blank=True, null=True)
+    business_name = models.CharField(max_length=255, blank=True, null=True)
+
     USERNAME_FIELD = 'username'
     REQUIRED_FIELDS = ['email', 'name']
 
     def __str__(self):
         return self.username
+
