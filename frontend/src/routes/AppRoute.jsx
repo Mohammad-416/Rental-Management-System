@@ -10,6 +10,8 @@ import NotFound from '../pages/NotFound';
 import Landing from '../pages/Landing';
 import AdminLogin from '../AdminLogin';
 import Profile from "../pages/Profile";
+import CustomerDash from '../CustomerDash';
+import AnalyticsCustomer from '../AnalyticsCustomer';
 
 const RouteHandler = () => {
   return (
@@ -23,6 +25,8 @@ const RouteHandler = () => {
       <Route path="/home" element={<Home />} />
       <Route path="/landing" element={<Landing />} />
       <Route path="/profile" element={<Profile />} />
+      <Route path="/customerDashboard" element={<CustomerDash />} />
+      <Route path="/analyticsCustomer" element={<AnalyticsCustomer />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
