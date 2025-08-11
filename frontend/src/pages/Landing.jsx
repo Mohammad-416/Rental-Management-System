@@ -8,6 +8,8 @@ import partyImg from '../assets/party.png';
 import phoneImg from '../assets/phone.png';
 import appliancesImg from '../assets/appliances.png';
 
+
+
 const Landing = () => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
