@@ -15,7 +15,6 @@ const CustomerDash = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
-<<<<<<< HEAD
 
   useEffect(() => {
     const cookies = async () => {
@@ -29,10 +28,6 @@ const CustomerDash = () => {
     };
     cookies();
   }, []);
-=======
-  const [isLoggingOut, setIsLoggingOut] = useState(false);
-  const navigate = useNavigate();
->>>>>>> refs/remotes/origin/main
   
   // Infinite Scrolling States
   const [products, setProducts] = useState([]);
