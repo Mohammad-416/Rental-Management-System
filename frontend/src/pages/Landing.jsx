@@ -209,7 +209,7 @@ const Landing = () => {
         {/* Hero Section */}
         <section className="hero" id="hero">
           <div className="hero-content">
-            <h1 className="hero-title">Rent Anything, Anytime</h1>
+            <h1 className="hero-title overflow-hidden">Rent Anything, Anytime</h1>
             <p className="hero-subtitle">
               Your Ultimate Rental Marketplace - From electronics to furniture, tools to party equipment. 
               Rent what you need, when you need it.
@@ -311,7 +311,7 @@ const Landing = () => {
               <Link to="/signup" className="btn-primary">
                 Create Account
               </Link>
-              <Link to="/signin" className="btn-secondary">
+              <Link to="/login" className="btn-secondary">
                 Sign In
               </Link>
             </div>

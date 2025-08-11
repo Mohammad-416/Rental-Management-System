@@ -410,7 +410,7 @@ const Login = () => {
 
         .btn-secondary {
           background: transparent;
-          color: #007bff;
+          color: #007bff;R
           border: 2px solid #007bff;
         }
 
