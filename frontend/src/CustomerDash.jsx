@@ -42,37 +42,52 @@ const CustomerDash = () => {
     }
   }, [isDarkMode]);
 
-  // Logout function
-  const handleLogout = async () => {
-    setIsLoggingOut(true);
-    try {
-      const response = await axios.post('http://localhost:8000/api/auth/logout/', {}, {
-        withCredentials: true,
+  function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
+      }
+    }
+  }
+  return cookieValue;
+}
+
+// Logout function
+const handleLogout = async () => {
+  setIsLoggingOut(true);
+  try {
+    const response = await axios.post(
+      'http://localhost:8000/api/auth/logout/',
+      {},
+      {
+        withCredentials: true, // sends cookies like sessionid
         headers: {
           'Content-Type': 'application/json',
-          'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || '',
+          'X-CSRFToken': getCookie('csrftoken') || ''
         }
-      });
-
-      if (response.status === 200) {
-        // Clear any stored user data
-        localStorage.removeItem('user');
-        localStorage.removeItem('token');
-        sessionStorage.clear();
-        
-        // Redirect to login page or home
-        navigate('/login');
       }
-    } catch (error) {
-      console.error('Logout error:', error);
-      // Even if API call fails, clear local data and redirect
-      localStorage.clear();
+    );
+
+    if (response.status === 200) {
+      localStorage.removeItem('user');
+      localStorage.removeItem('token');
       sessionStorage.clear();
       navigate('/login');
-    } finally {
-      setIsLoggingOut(false);
     }
-  };
+  } catch (error) {
+    console.error('Logout error:', error);
+    localStorage.clear();
+    sessionStorage.clear();
+    navigate('/login');
+  } finally {
+    setIsLoggingOut(false);
+  }
+};
 
   // Fetch products from API
   const fetchProducts = useCallback(async (pageNum = 1, reset = false) => {
@@ -1231,10 +1246,10 @@ const CustomerDash = () => {
               </a>
             </li>
             <li className="sidebar-item">
-              <div className="sidebar-link">
-                <FaCalendarAlt />
-                Bookings
-              </div>
+              <Link to="/wishlist" className="sidebar-link">
+                <FaHeart />
+                Wishlist
+              </Link>
             </li>
             <li className="sidebar-item">
               <div className="sidebar-link">
