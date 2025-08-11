@@ -60,6 +60,7 @@ INSTALLED_APPS = [
     'dj_rest_auth',                   # optional, for REST social endpoints
     'dj_rest_auth.registration',
     'rentals',
+    'transactions',
 ]
 
 MIDDLEWARE = [
