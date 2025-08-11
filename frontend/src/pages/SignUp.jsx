@@ -245,7 +245,7 @@ const SignUp = () => {
 
       console.log("Registration successful:", res.data);
       alert(`Demo: ${currentRole.charAt(0).toUpperCase() + currentRole.slice(1)} account created successfully!\nPlease check your email for verification.`);
-      navigate('/home');
+      navigate(`/profile?isCustomer=${currentRole === 'customer'}`);
     } catch (error) {
       console.error("Registration failed:", error.response?.data || error.message);
       alert('Registration failed. Please try again.');
@@ -254,8 +254,8 @@ const SignUp = () => {
     }
   };
 
-  const navigateToProfile = () => {
-    navigate(`/profile?isCustomer=${currentRole === 'customer'}`);
+  const navigateToLogin = () => {
+    navigate(`/login`);
   };
 
 
@@ -612,7 +612,7 @@ const SignUp = () => {
               <button
                 type="button"
                 className="btn btn-secondary"
-                onClick={navigateToProfile}
+                onClick={navigateToLogin}
               >
                 Already have an account? Sign In
               </button>
