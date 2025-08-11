@@ -12,6 +12,8 @@ import AdminLogin from '../AdminLogin';
 import Profile from "../pages/Profile";
 import CustomerDash from '../CustomerDash';
 import AnalyticsCustomer from '../AnalyticsCustomer';
+import SellerDashboard from '../seller/sellerDashboard';
+import SellerCreate from '../seller/sellerCreate';
 
 const RouteHandler = () => {
   return (
@@ -27,6 +29,8 @@ const RouteHandler = () => {
       <Route path="/profile" element={<Profile />} />
       <Route path="/customerDashboard" element={<CustomerDash />} />
       <Route path="/analyticsCustomer" element={<AnalyticsCustomer />} />
+      <Route path="/sellerDashboard" element={<SellerDashboard />} />
+      <Route path="/sellerCreate" element={<SellerCreate />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
