@@ -1,17 +1,49 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FaHome, FaBox, FaCalendarAlt, FaCreditCard, FaBell, 
-  FaUser, FaSearch, FaFilter, FaPlus, FaEdit, FaTrash, 
+import {
+  FaHome, FaBox, FaCalendarAlt, FaCreditCard, FaBell,
+  FaUser, FaSearch, FaFilter, FaPlus, FaEdit, FaTrash,
   FaEye, FaDownload, FaChartBar, FaTruck, FaClock,
   FaCheck, FaTimes, FaExclamationTriangle
 } from 'react-icons/fa';
-
+import axios from 'axios';
 
 const AnalyticsCustomer = ({ isCustomer = true }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const [recentOrders, setRecentOrders] = useState([]); // ✅ moved to state
+
+  useEffect(() => {
+    // Get CSRF token first
+    const getCsrf = async () => {
+      try {
+        await axios.get("http://localhost:8000/api/auth/csrf", {
+          withCredentials: true,
+        });
+      } catch (error) {
+        console.error("Error fetching CSRF token:", error);
+      }
+    };
+    getCsrf();
+  }, []);
+
+  useEffect(() => {
+    // Fetch recent orders from backend
+    const fetchRecentOrders = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:8000/api/transactions/customer/transactions",
+          { withCredentials: true }
+        );
+        setRecentOrders(res.data); // assumes API returns an array
+      } catch (error) {
+        console.error("Error fetching recent orders:", error);
+      }
+    };
+
+    fetchRecentOrders();
+  }, []);
 
   useEffect(() => {
     if (isDarkMode) {
@@ -21,19 +53,12 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
     }
   }, [isDarkMode]);
 
-  // Sample data
+  // Sample dashboard stats
   const dashboardStats = [
     { title: 'Active Rentals', value: '12', icon: FaBox, color: '#3b82f6', trend: '+2' },
     { title: 'Total Spent', value: '$2,450', icon: FaCreditCard, color: '#10b981', trend: '+15%' },
     { title: 'Pending Returns', value: '3', icon: FaClock, color: '#f59e0b', trend: '-1' },
     { title: 'Available Credits', value: '$150', icon: FaCheck, color: '#8b5cf6', trend: '+$50' }
-  ];
-
-  const recentOrders = [
-    { id: 'RNT-001', product: 'Professional DSLR Camera', status: 'active', startDate: '2025-08-10', endDate: '2025-08-12', amount: '$240' },
-    { id: 'RNT-002', product: 'Gaming Laptop RTX 4080', status: 'pending_return', startDate: '2025-08-08', endDate: '2025-08-11', amount: '$180' },
-    { id: 'RNT-003', product: 'Party Sound System', status: 'returned', startDate: '2025-08-05', endDate: '2025-08-07', amount: '$320' },
-    { id: 'RNT-004', product: 'Electric Drill Set', status: 'cancelled', startDate: '2025-08-03', endDate: '2025-08-05', amount: '$80' }
   ];
 
   const upcomingPickups = [
@@ -724,8 +749,8 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
         <aside className="sidebar">
           <ul className="sidebar-menu">
             <li className="sidebar-item">
-              <a 
-                href="#overview" 
+              <a
+                href="#overview"
                 className={`sidebar-link ${activeTab === 'overview' ? 'active' : ''}`}
                 onClick={() => setActiveTab('overview')}
               >
@@ -734,8 +759,8 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
               </a>
             </li>
             <li className="sidebar-item">
-              <a 
-                href="#rentals" 
+              <a
+                href="#rentals"
                 className={`sidebar-link ${activeTab === 'rentals' ? 'active' : ''}`}
                 onClick={() => setActiveTab('rentals')}
               >
@@ -744,8 +769,8 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
               </a>
             </li>
             <li className="sidebar-item">
-              <a 
-                href="#bookings" 
+              <a
+                href="#bookings"
                 className={`sidebar-link ${activeTab === 'bookings' ? 'active' : ''}`}
                 onClick={() => setActiveTab('bookings')}
               >
@@ -754,8 +779,8 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
               </a>
             </li>
             <li className="sidebar-item">
-              <a 
-                href="#payments" 
+              <a
+                href="#payments"
                 className={`sidebar-link ${activeTab === 'payments' ? 'active' : ''}`}
                 onClick={() => setActiveTab('payments')}
               >
@@ -764,8 +789,8 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
               </a>
             </li>
             <li className="sidebar-item">
-              <a 
-                href="#profile" 
+              <a
+                href="#profile"
                 className={`sidebar-link ${activeTab === 'profile' ? 'active' : ''}`}
                 onClick={() => setActiveTab('profile')}
               >
@@ -819,48 +844,44 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
                   <thead>
                     <tr>
                       <th>Order ID</th>
-                      <th>Product</th>
+                      <th>Product Name</th>
                       <th>Status</th>
-                      <th>Amount</th>
-                      <th>Actions</th>
+                      <th>Owner Name</th>
+                      <th>Created Time</th>
                     </tr>
                   </thead>
                   <tbody>
                     {recentOrders.map((order) => {
                       const StatusIcon = getStatusIcon(order.status);
+                      const createdTime = new Date(order.created_at).toLocaleTimeString([], {
+                        hour: "2-digit",
+                        minute: "2-digit",
+                      });
                       return (
                         <tr key={order.id}>
                           <td className="font-medium">{order.id}</td>
-                          <td>{order.product}</td>
+                          <td>{order.product_name}</td>
                           <td>
-                            <span 
-                              className="status-badge" 
+                            <span
+                              className="status-badge"
                               style={{ backgroundColor: getStatusColor(order.status) }}
                             >
                               <StatusIcon className="text-xs" />
-                              {order.status.replace('_', ' ')}
+                              {order.status?.replace("_", " ")}
                             </span>
                           </td>
-                          <td className="font-semibold">{order.amount}</td>
-                          <td>
-                            <div className="order-actions">
-                              <button 
-                                className="action-btn"
-                                style={{ backgroundColor: 'rgba(59,130,246,0.1)', color: 'var(--blue)' }}
-                              >
-                                <FaEye />
-                              </button>
-                              <button 
-                                className="action-btn"
-                                style={{ backgroundColor: 'rgba(16,185,129,0.1)', color: '#10b981' }}
-                              >
-                                <FaDownload />
-                              </button>
-                            </div>
-                          </td>
+                          <td className="font-semibold">{order.owner_name}</td>
+                          <td>{createdTime}</td>
                         </tr>
                       );
                     })}
+                    {recentOrders.length === 0 && (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: "center", padding: "1rem" }}>
+                          No recent orders found
+                        </td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>

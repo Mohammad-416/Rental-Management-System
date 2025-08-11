@@ -15,6 +15,19 @@ const CustomerDash = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterCategory, setFilterCategory] = useState('all');
   const [showAddModal, setShowAddModal] = useState(false);
+
+  useEffect(() => {
+    const cookies = async () => {
+      try {
+        await axios.get("http://localhost:8000/api/auth/csrf", {
+          withCredentials: true,
+        });
+      } catch (error) {
+        console.error("Error fetching CSRF token:", error);
+      }
+    };
+    cookies();
+  }, []);
   
   // Infinite Scrolling States
   const [products, setProducts] = useState([]);
@@ -1096,10 +1109,10 @@ const CustomerDash = () => {
               </a>
             </li>
             <li className="sidebar-item">
-              <div className="sidebar-link">
-                <FaCalendarAlt />
-                Bookings
-              </div>
+              <Link to="/wishlist" className="sidebar-link">
+                <FaHeart />
+                Wishlist
+              </Link>
             </li>
             <li className="sidebar-item">
               <div className="sidebar-link">
