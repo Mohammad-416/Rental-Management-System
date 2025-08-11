@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { useParams,useSearchParams,useNavigate } from "react-router-dom"; 
 import "./SignUp.css"; // uses your main theme!
 import { FaMapMarkerAlt, FaPhoneAlt, FaBuilding, FaUser, FaIdBadge } from "react-icons/fa";
 
@@ -18,8 +18,10 @@ const initialBusiness = {
   address: "",
 };
 
-export default function ProfileCompletion({ isCustomer }) {
+export default function ProfileCompletion() {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams(); // ⬅ get query params
+  const isCustomer = searchParams.get("isCustomer") === "true"; // ⬅ read from query param
   const canvasRef = useRef(null);
 
   // Load CSRF token on mount
@@ -264,9 +266,7 @@ export default function ProfileCompletion({ isCustomer }) {
 
     try {
       const csrfToken = getCookie("csrftoken");
-      const apiURL = isCustomer
-        ? "http://localhost:8000/api/profile/customer/"
-        : "http://localhost:8000/api/profile/business/";
+      const apiURL = "http://localhost:8000/api/auth/profile/complete/"
 
       const data = new FormData();
       Object.entries(formData).forEach(([k, v]) => {
@@ -283,7 +283,7 @@ export default function ProfileCompletion({ isCustomer }) {
       });
 
       alert("Profile Completed! Redirecting…");
-      navigate("/home");
+      navigate("/customerDashboard");
     } catch (err) {
       if (err.response?.data) {
         const errFields = {};
