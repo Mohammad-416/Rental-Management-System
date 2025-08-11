@@ -4,7 +4,7 @@ import {
   FaBox, FaDollarSign, FaChartLine, FaUsers, FaHome, FaCog,
   FaBell, FaUser, FaSignOutAlt, FaUpload, FaImage, FaStar,
   FaHeart, FaShare, FaCopy, FaBarcode, FaTags, FaCalendarAlt,
-  FaSpinner, FaExclamationTriangle, FaRedo
+  FaSpinner, FaExclamationTriangle, FaRedo, FaShoppingCart
 } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
@@ -25,12 +25,11 @@ const CustomerDash = () => {
   const [initialLoading, setInitialLoading] = useState(true);
   const observerRef = useRef();
 
-  // Stats data
+  // Stats data (removed revenue)
   const [stats, setStats] = useState([
     { title: 'Total Products', value: '248', icon: FaBox, color: '#3b82f6', trend: '+12' },
-    { title: 'Monthly Revenue', value: '$45,230', icon: FaDollarSign, color: '#10b981', trend: '+18%' },
     { title: 'Active Rentals', value: '89', icon: FaChartLine, color: '#f59e0b', trend: '+7' },
-    { title: 'Total Customers', value: '1,247', icon: FaUsers, color: '#8b5cf6', trend: '+23' }
+    { title: 'Wishlist Items', value: '23', icon: FaHeart, color: '#8b5cf6', trend: '+5' }
   ]);
 
   useEffect(() => {
@@ -43,146 +42,137 @@ const CustomerDash = () => {
 
   // Fetch products from API
   const fetchProducts = useCallback(async (pageNum = 1, reset = false) => {
-  if (loading && !reset) return;
-  
-  setLoading(true);
-  setError(null);
-
-  try {
-    const params = {
-      ...(searchTerm && { search: searchTerm }),
-      ...(filterCategory !== 'all' && { category: filterCategory })
-    };
-
-    const response = await axios.get('http://localhost:8000/api/rentals/products/', {
-      params,
-      withCredentials: true
-    });
-
-    const newProductsRaw = response.data.results || response.data.data || response.data;
-
-    // Transform API fields to match your grid's expected shape
-    const newProducts = newProductsRaw.map(item => ({
-      id: item.id,
-      name: item.title,
-      category: "General",
-      price: `$${item.price_per_day}/day`,
-      stock: 10,
-      available: 5,
-      status: item.is_approved ? "active" : "pending",
-      rating: 4.5,
-      rentals: 0,
-      revenue: "$0",
-      image: item.main_image || "",
-    }));
-
-    const totalCount = newProducts.length; // total = only available items
-
-    // Always replace instead of append
-    setProducts(newProducts);
-
-    setHasMore(false); // no infinite scrolling
-    setPage(1); // reset to first page
-
-  } catch (err) {
-    console.error('Error fetching products:', err);
-    setError(err.response?.data?.message || 'Failed to load products');
+    if (loading && !reset) return;
     
-    if (pageNum === 1) {
-      const sampleProducts = [
-        { 
-          id: 'P001', 
-          name: 'Professional DSLR Camera', 
-          category: 'Electronics', 
-          price: '$240/day', 
-          stock: 5, 
-          available: 3,
-          status: 'active',
-          rating: 4.8,
-          rentals: 127,
-          revenue: '$30,480',
-          image: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=300&h=200&fit=crop'
-        },
-        { 
-          id: 'P002', 
-          name: 'Gaming Laptop RTX 4080', 
-          category: 'Electronics', 
-          price: '$180/day', 
-          stock: 8, 
-          available: 6,
-          status: 'active',
-          rating: 4.9,
-          rentals: 89,
-          revenue: '$16,020',
-          image: 'https://images.unsplash.com/photo-1593642702749-b7d2a804fbcf?w=300&h=200&fit=crop'
-        },
-        { 
-          id: 'P003', 
-          name: 'Party Sound System', 
-          category: 'Audio Equipment', 
-          price: '$320/day', 
-          stock: 3, 
-          available: 1,
-          status: 'low_stock',
-          rating: 4.7,
-          rentals: 156,
-          revenue: '$49,920',
-          image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop'
-        },
-        { 
-          id: 'P004', 
-          name: 'Electric Drill Set', 
-          category: 'Tools', 
-          price: '$80/day', 
-          stock: 12, 
-          available: 10,
-          status: 'active',
-          rating: 4.6,
-          rentals: 203,
-          revenue: '$16,240',
-          image: 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=300&h=200&fit=crop'
-        },
-        { 
-          id: 'P005', 
-          name: 'MacBook Pro M3', 
-          category: 'Electronics', 
-          price: '$200/day', 
-          stock: 6, 
-          available: 4,
-          status: 'active',
-          rating: 4.9,
-          rentals: 78,
-          revenue: '$15,600',
-          image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=300&h=200&fit=crop'
-        },
-        { 
-          id: 'P006', 
-          name: 'Wedding Decoration Kit', 
-          category: 'Events', 
-          price: '$450/day', 
-          stock: 4, 
-          available: 2,
-          status: 'active',
-          rating: 4.8,
-          rentals: 92,
-          revenue: '$41,400',
-          image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&h=200&fit=crop'
-        }
-      ];
-      setProducts(sampleProducts);
+    setLoading(true);
+    setError(null);
+
+    try {
+      const params = {
+        ...(searchTerm && { search: searchTerm }),
+        ...(filterCategory !== 'all' && { category: filterCategory })
+      };
+
+      const response = await axios.get('http://localhost:8000/api/rentals/products/', {
+        params,
+        withCredentials: true
+      });
+
+      const newProductsRaw = response.data.results || response.data.data || response.data;
+
+      // Transform API fields to match your grid's expected shape
+      const newProducts = newProductsRaw.map(item => ({
+        id: item.id,
+        name: item.title,
+        category: "General",
+        price: `$${item.price_per_day}/day`,
+        stock: 10,
+        available: 5,
+        status: item.is_approved ? "active" : "pending",
+        rating: 4.5,
+        rentals: 0,
+        image: item.main_image || "",
+      }));
+
+      const totalCount = newProducts.length;
+
+      // Always replace instead of append
+      setProducts(newProducts);
       setHasMore(false);
+      setPage(1);
+
+    } catch (err) {
+      console.error('Error fetching products:', err);
+      setError(err.response?.data?.message || 'Failed to load products');
+      
+      if (pageNum === 1) {
+        const sampleProducts = [
+          { 
+            id: 'P001', 
+            name: 'Professional DSLR Camera', 
+            category: 'Electronics', 
+            price: '$240/day', 
+            stock: 5, 
+            available: 3,
+            status: 'active',
+            rating: 4.8,
+            rentals: 127,
+            image: 'https://images.unsplash.com/photo-1606983340126-99ab4feaa64a?w=300&h=200&fit=crop'
+          },
+          { 
+            id: 'P002', 
+            name: 'Gaming Laptop RTX 4080', 
+            category: 'Electronics', 
+            price: '$180/day', 
+            stock: 8, 
+            available: 6,
+            status: 'active',
+            rating: 4.9,
+            rentals: 89,
+            image: 'https://images.unsplash.com/photo-1593642702749-b7d2a804fbcf?w=300&h=200&fit=crop'
+          },
+          { 
+            id: 'P003', 
+            name: 'Party Sound System', 
+            category: 'Audio Equipment', 
+            price: '$320/day', 
+            stock: 3, 
+            available: 1,
+            status: 'low_stock',
+            rating: 4.7,
+            rentals: 156,
+            image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=300&h=200&fit=crop'
+          },
+          { 
+            id: 'P004', 
+            name: 'Electric Drill Set', 
+            category: 'Tools', 
+            price: '$80/day', 
+            stock: 12, 
+            available: 10,
+            status: 'active',
+            rating: 4.6,
+            rentals: 203,
+            image: 'https://images.unsplash.com/photo-1572981779307-38b8cabb2407?w=300&h=200&fit=crop'
+          },
+          { 
+            id: 'P005', 
+            name: 'MacBook Pro M3', 
+            category: 'Electronics', 
+            price: '$200/day', 
+            stock: 6, 
+            available: 4,
+            status: 'active',
+            rating: 4.9,
+            rentals: 78,
+            image: 'https://images.unsplash.com/photo-1541807084-5c52b6b3adef?w=300&h=200&fit=crop'
+          },
+          { 
+            id: 'P006', 
+            name: 'Wedding Decoration Kit', 
+            category: 'Events', 
+            price: '$450/day', 
+            stock: 4, 
+            available: 2,
+            status: 'active',
+            rating: 4.8,
+            rentals: 92,
+            image: 'https://images.unsplash.com/photo-1519225421980-715cb0215aed?w=300&h=200&fit=crop'
+          }
+        ];
+        setProducts(sampleProducts);
+        setHasMore(false);
+      }
+    } finally {
+      setLoading(false);
+      setInitialLoading(false);
     }
-  } finally {
-    setLoading(false);
-    setInitialLoading(false);
-  }
-}, [searchTerm, filterCategory, loading, products.length]);
+  }, [searchTerm, filterCategory, loading, products.length]);
 
-// Initial load
-useEffect(() => {
-  fetchProducts(1, true);
-}, []);
-
+  // Initial load
+  useEffect(() => {
+    fetchProducts(1, true);
+  }, []);
 
   // Search and filter debounce
   useEffect(() => {
@@ -234,10 +224,16 @@ useEffect(() => {
     fetchProducts(1, true);
   };
 
+  const handleAddToCart = (product) => {
+    // Add cart functionality here
+    console.log('Added to cart:', product);
+    // You can add cart logic or show a success message
+  };
+
   return (
     <div className={`product-dashboard ${isDarkMode ? 'dark' : ''}`}>
       <style jsx="true">{`
-        /* Landing Page Variables */
+        /* Same existing styles as before - I'll keep them unchanged */
         :root {
           --blue: #3b82f6;
           --blue-deep: #1d4ed8;
@@ -498,12 +494,18 @@ useEffect(() => {
           color: var(--dark-text-soft);
         }
 
-        /* Stats Cards */
+        /* Stats Cards - Updated for 3 cards */
         .stats-grid {
           display: grid;
-          grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+          grid-template-columns: repeat(3, 1fr);
           gap: 1.5rem;
           margin-bottom: 2rem;
+        }
+
+        @media (max-width: 768px) {
+          .stats-grid {
+            grid-template-columns: 1fr;
+          }
         }
 
         .stat-card {
@@ -594,7 +596,7 @@ useEffect(() => {
           color: var(--dark-text-soft);
         }
 
-        /* Search and Filter Bar */
+        /* Search and Filter Bar - Removed add product button */
         .search-filter-bar {
           display: flex;
           gap: 1rem;
@@ -644,29 +646,6 @@ useEffect(() => {
           background: var(--dark-card-light);
           border-color: rgba(76,205,196,0.2);
           color: var(--dark-text);
-        }
-
-        .add-product-btn {
-          padding: 0.75rem 1.5rem;
-          background: linear-gradient(135deg, var(--blue), var(--blue-deep));
-          color: white;
-          border: none;
-          border-radius: 12px;
-          font-weight: 600;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          gap: 0.5rem;
-          transition: all var(--speed) ease;
-        }
-
-        .add-product-btn:hover {
-          transform: translateY(-2px);
-          box-shadow: 0 8px 25px rgba(59,130,246,0.3);
-        }
-
-        .dark .add-product-btn {
-          background: linear-gradient(135deg, var(--rose), var(--teal));
         }
 
         /* Products Grid */
@@ -801,31 +780,30 @@ useEffect(() => {
           color: var(--teal);
         }
 
-        .product-actions {
-          display: flex;
-          gap: 0.5rem;
-        }
-
-        .action-btn {
-          width: 36px;
-          height: 36px;
+        /* Cart Button */
+        .cart-btn {
+          padding: 0.75rem 1.5rem;
+          background: linear-gradient(135deg, var(--blue), var(--blue-deep));
+          color: white;
           border: none;
-          border-radius: 8px;
+          border-radius: 12px;
+          font-weight: 600;
           cursor: pointer;
           display: flex;
           align-items: center;
-          justify-content: center;
+          gap: 0.5rem;
           transition: all var(--speed) ease;
-          color: white;
+          font-size: 0.9rem;
         }
 
-        .action-btn:hover {
+        .cart-btn:hover {
           transform: translateY(-2px);
+          box-shadow: 0 8px 25px rgba(59,130,246,0.3);
         }
 
-        .action-btn.view { background: rgba(59,130,246,0.8); }
-        .action-btn.edit { background: rgba(16,185,129,0.8); }
-        .action-btn.delete { background: rgba(239,68,68,0.8); }
+        .dark .cart-btn {
+          background: linear-gradient(135deg, var(--rose), var(--teal));
+        }
 
         /* Loading States */
         .loading-container {
@@ -1067,10 +1045,6 @@ useEffect(() => {
             margin-left: 0;
             padding: 1rem;
           }
-          
-          .stats-grid {
-            grid-template-columns: 1fr;
-          }
 
           .products-grid {
             grid-template-columns: 1fr;
@@ -1098,15 +1072,15 @@ useEffect(() => {
             <div className="nav-icon">
               <FaCog />
             </div>
-            <Link to="/analyticsCustomer" className="user-avatar">
+            <a href="http://localhost:5173/analyticsCustomer" className="user-avatar">
               <FaUser />
-            </Link>
+            </a>
           </div>
         </div>
       </nav>
 
       <div className="dashboard-layout">
-        {/* Sidebar */}
+        {/* Sidebar - Removed Revenue and Customers */}
         <aside className="sidebar">
           <ul className="sidebar-menu">
             <li className="sidebar-item">
@@ -1116,27 +1090,15 @@ useEffect(() => {
               </div>
             </li>
             <li className="sidebar-item">
-              <div className="sidebar-link">
+              <a href="http://localhost:5173/analyticsCustomer" className="sidebar-link">
                 <FaChartLine />
                 Analytics
-              </div>
-            </li>
-            <li className="sidebar-item">
-              <div className="sidebar-link">
-                <FaUsers />
-                Customers
-              </div>
+              </a>
             </li>
             <li className="sidebar-item">
               <div className="sidebar-link">
                 <FaCalendarAlt />
                 Bookings
-              </div>
-            </li>
-            <li className="sidebar-item">
-              <div className="sidebar-link">
-                <FaDollarSign />
-                Revenue
               </div>
             </li>
             <li className="sidebar-item">
@@ -1154,11 +1116,11 @@ useEffect(() => {
           <div className="dashboard-header fade-in">
             <h1 className="dashboard-title">Product Dashboard</h1>
             <p className="dashboard-subtitle">
-              Manage your rental inventory, track performance, and optimize your product offerings.
+              Browse and rent products from our extensive inventory.
             </p>
           </div>
 
-          {/* Stats Grid */}
+          {/* Stats Grid - Updated with 3 cards */}
           <div className="stats-grid">
             {stats.map((stat, index) => (
               <div key={index} className="stat-card fade-in" style={{ animationDelay: `${index * 0.1}s` }}>
@@ -1174,7 +1136,7 @@ useEffect(() => {
             ))}
           </div>
 
-          {/* Search and Filter Bar */}
+          {/* Search and Filter Bar - Removed Add Product Button */}
           <div className="search-filter-bar slide-in">
             <div className="search-wrapper">
               <FaSearch className="search-icon" />
@@ -1198,10 +1160,6 @@ useEffect(() => {
               <option value="furniture">Furniture</option>
               <option value="events">Events</option>
             </select>
-            <button className="add-product-btn" onClick={() => setShowAddModal(true)}>
-              <FaPlus />
-              Add Product
-            </button>
           </div>
 
           {/* Products Grid */}
@@ -1271,8 +1229,8 @@ useEffect(() => {
                           <div className="stat-label-small">Available</div>
                         </div>
                         <div className="stat-item">
-                          <div className="stat-value-small">{product.revenue || product.total_revenue || '$0'}</div>
-                          <div className="stat-label-small">Revenue</div>
+                          <div className="stat-value-small">{product.status || 'Active'}</div>
+                          <div className="stat-label-small">Status</div>
                         </div>
                       </div>
 
@@ -1280,17 +1238,13 @@ useEffect(() => {
                         <div className="product-price">
                           {product.price || product.price_per_day || '$0/day'}
                         </div>
-                        <div className="product-actions">
-                          <button className="action-btn view">
-                            <FaEye />
-                          </button>
-                          <button className="action-btn edit">
-                            <FaEdit />
-                          </button>
-                          <button className="action-btn delete">
-                            <FaTrash />
-                          </button>
-                        </div>
+                        <button 
+                          className="cart-btn"
+                          onClick={() => handleAddToCart(product)}
+                        >
+                          <FaShoppingCart />
+                          Add to Cart
+                        </button>
                       </div>
                     </div>
                   </div>
