@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import './AdminPortal.css';
+import { useNavigate } from 'react-router-dom';
 
 const AdminPanel = () => {
+  const navigate = useNavigate();
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -214,6 +216,7 @@ const AdminPanel = () => {
   // Navigation handlers
   const handleBackToUser = () => {
     alert('Redirecting to user login page...');
+    navigate('./login');
   };
 
   const handleEmergencyAccess = () => {
