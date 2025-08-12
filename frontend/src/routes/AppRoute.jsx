@@ -15,6 +15,7 @@ import AnalyticsCustomer from '../AnalyticsCustomer';
 import SellerDashboard from '../seller/sellerDashboard';
 import SellerCreate from '../seller/sellerCreate';
 import Wishlist from "../pages/Wishlist";
+import SingleProduct from '../pages/SingleProduct';
 
 const RouteHandler = () => {
   return (
@@ -32,7 +33,8 @@ const RouteHandler = () => {
       <Route path="/analyticsCustomer" element={<AnalyticsCustomer />} />
       <Route path="/sellerDashboard" element={<SellerDashboard />} />
       <Route path="/sellerCreate" element={<SellerCreate />} />
-      <Route path="wishlist" element={<Wishlist />} />
+      <Route path="/wishlist" element={<Wishlist />} />
+      <Route path="/singleproduct" element={<SingleProduct />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
