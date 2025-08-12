@@ -2,16 +2,24 @@ import React, { useState, useEffect } from 'react';
 import {
   FaHome, FaBox, FaCalendarAlt, FaCreditCard, FaBell,
   FaUser, FaSearch, FaFilter, FaPlus, FaEdit, FaTrash,
-  FaEye, FaDownload, FaChartBar, FaTruck, FaClock,
-  FaCheck, FaTimes, FaExclamationTriangle
+  FaEye, FaDownload, FaChartBar,FaChartLine, FaTruck, FaClock,
+  FaCheck, FaTimes, FaExclamationTriangle, FaHeart, FaCog, FaSignOutAlt
 } from 'react-icons/fa';
+
+import { Link, useNavigate } from 'react-router-dom';
+
 import axios from 'axios';
+
+
 
 const AnalyticsCustomer = ({ isCustomer = true }) => {
   const [isDarkMode, setIsDarkMode] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState('all');
+  const navigate = useNavigate();
+    
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
   const [recentOrders, setRecentOrders] = useState([]); // ✅ moved to state
 
   useEffect(() => {
@@ -28,22 +36,46 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
     getCsrf();
   }, []);
 
-  useEffect(() => {
-    // Fetch recent orders from backend
-    const fetchRecentOrders = async () => {
-      try {
-        const res = await axios.get(
-          "http://localhost:8000/api/transactions/customer/transactions",
-          { withCredentials: true }
-        );
-        setRecentOrders(res.data); // assumes API returns an array
-      } catch (error) {
-        console.error("Error fetching recent orders:", error);
+function getCookie(name) {
+  let cookieValue = null;
+  if (document.cookie && document.cookie !== "") {
+    const cookies = document.cookie.split(";");
+    for (let cookie of cookies) {
+      cookie = cookie.trim();
+      if (cookie.startsWith(name + "=")) {
+        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+        break;
       }
-    };
+    }
+  }
+  return cookieValue;
+}
 
-    fetchRecentOrders();
-  }, []);
+useEffect(() => {
+  const fetchRecentOrders = async () => {
+    try {
+      const csrfToken = getCookie("csrftoken");
+
+      const res = await axios.get(
+        "http://localhost:8000/api/transactions/customer/transactions",
+        {
+          headers: {
+            "X-CSRFToken": csrfToken
+          },
+          withCredentials: true // ensures sessionid is sent
+        }
+      );
+
+      setRecentOrders(res.data);
+    } catch (error) {
+      console.error("Error fetching recent orders:", error);
+    }
+  };
+
+  fetchRecentOrders();
+}, []);
+
+
 
   useEffect(() => {
     if (isDarkMode) {
@@ -52,6 +84,7 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
       document.body.classList.remove('dark');
     }
   }, [isDarkMode]);
+
 
   // Sample dashboard stats
   const dashboardStats = [
@@ -76,6 +109,41 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
     }
   };
 
+  
+
+  // Logout function
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const response = await axios.post(
+        'http://localhost:8000/api/auth/logout/',
+        {},
+        {
+          withCredentials: true, // sends cookies like sessionid
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken') || ''
+          }
+        }
+      );
+  
+      if (response.status === 200) {
+        localStorage.removeItem('user');
+        localStorage.removeItem('token');
+        sessionStorage.clear();
+        navigate('/login');
+      }
+    } catch (error) {
+      console.error('Logout error:', error);
+      localStorage.clear();
+      sessionStorage.clear();
+      navigate('/login');
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+  
+
   const getStatusIcon = (status) => {
     switch (status) {
       case 'active': return FaCheck;
@@ -85,6 +153,8 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
       default: return FaBox;
     }
   };
+
+  
 
   return (
     <div className={`dashboard-container ${isDarkMode ? 'dark' : ''}`}>
@@ -164,6 +234,100 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
           align-items: center;
           max-width: 1400px;
           margin: 0 auto;
+        }
+
+         /* Logout Button - Professional MNC Style */
+        .logout-section {
+          padding: 1rem;
+          margin-top: auto;
+          border-top: 1px solid rgba(59,130,246,0.1);
+        }
+
+        .dark .logout-section {
+          border-top-color: rgba(76,205,196,0.1);
+        }
+
+        .logout-btn {
+          width: 100%;
+          display: flex;
+          align-items: center;
+          gap: 0.75rem;
+          padding: 1rem 1.5rem;
+          background: linear-gradient(135deg, var(--red), var(--red-dark));
+          color: white;
+          border: none;
+          border-radius: 12px;
+          font-weight: 600;
+          font-size: 0.95rem;
+          cursor: pointer;
+          transition: all var(--speed) ease;
+          position: relative;
+          overflow: hidden;
+          box-shadow: 0 4px 12px rgba(220,38,38,0.2);
+        }
+
+        .logout-btn::before {
+          content: '';
+          position: absolute;
+          top: 0;
+          left: -100%;
+          width: 100%;
+          height: 100%;
+          background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+          transition: left 0.6s ease;
+        }
+
+        .logout-btn:hover::before {
+          left: 100%;
+        }
+
+        .logout-btn:hover {
+          transform: translateY(-2px);
+          box-shadow: var(--shadow-red);
+          background: linear-gradient(135deg, #ef4444, var(--red));
+        }
+
+        .logout-btn:active {
+          transform: translateY(0);
+        }
+
+        .logout-btn:disabled {
+          opacity: 0.7;
+          cursor: not-allowed;
+          transform: none;
+        }
+
+        .dark .logout-btn {
+          background: linear-gradient(135deg, #ef4444, #dc2626);
+          box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+        }
+
+        .dark .logout-btn:hover {
+          background: linear-gradient(135deg, #f87171, #ef4444);
+          box-shadow: 0 8px 25px rgba(239,68,68,0.4);
+        }
+
+        .logout-icon {
+          font-size: 1.1rem;
+          transition: transform var(--speed) ease;
+        }
+
+        .logout-btn:hover .logout-icon {
+          transform: translateX(2px);
+        }
+
+        .logout-text {
+          font-weight: 600;
+          letter-spacing: 0.3px;
+        }
+
+        .logout-spinner {
+          width: 16px;
+          height: 16px;
+          border: 2px solid transparent;
+          border-top: 2px solid currentColor;
+          border-radius: 50%;
+          animation: spin 1s linear infinite;
         }
 
         .logo {
@@ -745,60 +909,54 @@ const AnalyticsCustomer = ({ isCustomer = true }) => {
       </nav>
 
       <div className="dashboard-layout">
-        {/* Sidebar */}
+        {/* Sidebar with Logout Button */}
         <aside className="sidebar">
           <ul className="sidebar-menu">
             <li className="sidebar-item">
-              <a
-                href="#overview"
-                className={`sidebar-link ${activeTab === 'overview' ? 'active' : ''}`}
-                onClick={() => setActiveTab('overview')}
-              >
-                <FaHome />
-                Overview
-              </a>
-            </li>
-            <li className="sidebar-item">
-              <a
-                href="#rentals"
-                className={`sidebar-link ${activeTab === 'rentals' ? 'active' : ''}`}
-                onClick={() => setActiveTab('rentals')}
-              >
+              <div className="sidebar-link active">
                 <FaBox />
-                My Rentals
+                Products
+              </div>
+            </li>
+            <li className="sidebar-item">
+              <a href="http://localhost:5173/analyticsCustomer" className="sidebar-link">
+                <FaChartLine />
+                Analytics
               </a>
             </li>
             <li className="sidebar-item">
-              <a
-                href="#bookings"
-                className={`sidebar-link ${activeTab === 'bookings' ? 'active' : ''}`}
-                onClick={() => setActiveTab('bookings')}
-              >
-                <FaCalendarAlt />
-                Bookings
-              </a>
+              <Link to="/wishlist" className="sidebar-link">
+                <FaHeart />
+                Wishlist
+              </Link>
             </li>
             <li className="sidebar-item">
-              <a
-                href="#payments"
-                className={`sidebar-link ${activeTab === 'payments' ? 'active' : ''}`}
-                onClick={() => setActiveTab('payments')}
-              >
-                <FaCreditCard />
-                Payments
-              </a>
-            </li>
-            <li className="sidebar-item">
-              <a
-                href="#profile"
-                className={`sidebar-link ${activeTab === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveTab('profile')}
-              >
-                <FaUser />
-                Profile
-              </a>
+              <div className="sidebar-link">
+                <FaCog />
+                Settings
+              </div>
             </li>
           </ul>
+          
+          {/* Professional Logout Section */}
+          <div className="logout-section">
+            <button 
+              className="logout-btn"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+            >
+              <div className="logout-icon">
+                {isLoggingOut ? (
+                  <div className="logout-spinner"></div>
+                ) : (
+                  <FaSignOutAlt />
+                )}
+              </div>
+              <span className="logout-text">
+                {isLoggingOut ? 'Signing Out...' : 'Sign Out'}
+              </span>
+            </button>
+          </div>
         </aside>
 
         {/* Main Content */}
