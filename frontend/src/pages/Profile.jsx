@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import axios from "axios";
-import { useParams,useSearchParams,useNavigate } from "react-router-dom"; 
+import { useParams, useSearchParams, useNavigate } from "react-router-dom";
 import "./SignUp.css"; // uses your main theme!
 import { FaMapMarkerAlt, FaPhoneAlt, FaBuilding, FaUser, FaIdBadge } from "react-icons/fa";
 
@@ -263,27 +263,37 @@ export default function ProfileCompletion() {
     e.preventDefault();
     if (!validate()) return;
     setIsLoading(true);
-
     try {
       const csrfToken = getCookie("csrftoken");
-      const apiURL = "http://localhost:8000/api/auth/profile/complete/"
 
-      const data = new FormData();
-      Object.entries(formData).forEach(([k, v]) => {
-        if (v !== undefined && v !== null)
-          data.append(k, v);
-      });
+      const apiURL = "http://localhost:8000/api/auth/profile/complete/";
 
-      await axios.post(apiURL, data, {
-        headers: {
-          "X-CSRFToken": csrfToken,
-          // "Content-Type": will be auto set by axios for FormData
+      await axios.post(
+        apiURL,
+        {
+          name: formData.name || "John Doe", // fallback for demo
+          phone: formData.phone,
+          address: formData.address,
+          is_customer: isCustomer,
+          business_name: formData.businessName,
+          gst_number: formData.gst
         },
-        withCredentials: true,
-      });
+        {
+          headers: {
+            "X-CSRFToken": csrfToken,
+            "Content-Type": "application/json"
+            // Don't manually set sessionid here — cookies handle it
+          },
+          withCredentials: true // sends sessionid cookie from browser
+        }
+      );
 
       alert("Profile Completed! Redirecting…");
-      navigate("/customerDashboard");
+      if (isCustomer) {
+        navigate("/customerDashboard");
+      } else {
+        navigate("/sellerDashboard");
+      }
     } catch (err) {
       if (err.response?.data) {
         const errFields = {};
@@ -298,6 +308,7 @@ export default function ProfileCompletion() {
       setIsLoading(false);
     }
   }
+
 
   // handle file input (profile picture)
   function handleFileInput(e) {
