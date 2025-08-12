@@ -21,13 +21,6 @@ services:
     depends_on:
       - db
 
-  frontend:
-    build: ./frontend
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    ports:
-      - "5173:5173"
 
 volumes:
   postgres_data:
